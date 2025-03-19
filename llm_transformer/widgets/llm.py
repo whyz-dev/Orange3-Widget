@@ -1,10 +1,12 @@
+import os
 from openai import OpenAI
-
+from dotenv import load_dotenv
 
 class LLM:
     """GPT API를 호출하는 클래스"""
-
-    def __init__(self, api_key):
+    def __init__(self):
+        load_dotenv()
+        api_key = os.getenv("OPENAI_API_KEY")
         self.openai_client = OpenAI(api_key=api_key)
 
     def get_response(self, prompt, data_list):
@@ -27,3 +29,5 @@ class LLM:
                 results.append(f"Error: {str(e)}")  # 오류 발생 시 메시지 추가
 
         return results
+
+    
