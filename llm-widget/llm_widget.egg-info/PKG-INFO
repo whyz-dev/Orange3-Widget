@@ -1,0 +1,7 @@
+Metadata-Version: 2.2
+Name: llm-widget
+Version: 0.1
+Summary: Orange3 LLM 기반 사용자 정의 위젯
+Requires-Dist: Orange3
+Dynamic: requires-dist
+Dynamic: summary

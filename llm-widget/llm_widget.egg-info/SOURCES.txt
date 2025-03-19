@@ -1,0 +1,9 @@
+setup.py
+llm_widget.egg-info/PKG-INFO
+llm_widget.egg-info/SOURCES.txt
+llm_widget.egg-info/dependency_links.txt
+llm_widget.egg-info/entry_points.txt
+llm_widget.egg-info/requires.txt
+llm_widget.egg-info/top_level.txt
+widgets/__init__.py
+widgets/llm.py
