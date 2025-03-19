@@ -2,6 +2,7 @@ from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
 import Orange.data
 from PyQt5.QtWidgets import QTextEdit  # QTextEdit 사용
+import numpy as np
 from .llm import LLM  # llm.py에서 LLM 클래스를 가져옴
 
 class LLMTransformerWidget(OWWidget):
@@ -42,47 +43,58 @@ class LLMTransformerWidget(OWWidget):
 
     @Inputs.text_data
     def set_data(self, data):
-        """Orange Table 데이터를 list[str]로 변환하여 저장 (Meta에서 `comment_text` 추출)"""
-        print(f"📌 `set_data()` 실행됨 - 데이터 타입: {type(data)}")
-
         if data is None or len(data) == 0:
             print("❌ `set_data()`가 빈 데이터([])를 받았습니다. 기본 테스트 데이터를 넣습니다.")
-            data = ["This is a test input sentence."]  # 기본 테스트 데이터
         else:
             if isinstance(data, Orange.data.Table):
-                print(f"✅ Orange Table 확인됨 - 데이터 개수: {len(data)}")
-                print(f"✅ Orange Table 컬럼 정보: {data.domain}")
-
-                if "comment_text" in data.domain.metas:
-                    meta_index = data.domain.index(
-                        data.domain.metas["comment_text"]
-                    )  # Meta 컬럼 인덱스
-                    data = [str(row.metas[meta_index]) for row in data]
+                # 모든 string-meta 변수를 찾음
+                string_meta_indices = [
+                    idx for idx, var in enumerate(data.domain.metas)
+                    if isinstance(var, Orange.data.StringVariable)
+                ]
+                # 모든 string-meta 변수를 모아서 하나의 문자열로 합침
+                data = [
+                    " ".join(str(row.metas[idx]) for idx in string_meta_indices)
+                    for row in data
+                ]
 
         self.text_data = data
-        print(f"📌 최종 변환된 입력 데이터: {self.text_data[:5]} ...")  # 데이터 내용 확인
         self.transform_button.setDisabled(False)
+
 
     def process(self):
         """변환 실행 버튼을 눌렀을 때만 GPT API 호출"""
+        self.prompt = self.prompt_input.toPlainText()
+        if not self.text_data:
+            self.result_text = "❌ 입력 데이터가 없습니다."
+            self.result_display.setPlainText(self.result_text)
+            return
+
+        # ✅ 문자열 데이터를 위한 메타 데이터 설정
+        domain = Orange.data.Domain([], metas=[Orange.data.StringVariable("Transformed Text")])
+
         try:
-            # GPT API 호출
+            # ✅ GPT API 호출 (timeout 매개변수 제거)
             llm = LLM()
-            results = llm.get_response(self.prompt, self.text_data)
-            print(results)
+            results = llm.get_response(self.prompt, self.text_data)  # timeout 제거
+            print(self.prompt)
+            if not results:
+                raise ValueError("GPT API returned no results.")  # 결과가 없을 경우 오류 발생
 
-            # 결과 데이터를 Orange Table 형태로 변환
-            domain = Orange.data.Domain([Orange.data.StringVariable("Transformed Text")], [])
-            transformed_data = Orange.data.Table(domain, [[result] for result in results])
+            # ✅ 변환된 데이터 저장 (항상 문자열)
+            transformed_data = Orange.data.Table(domain, [[str(result)] for result in results])
 
-            # 변환된 결과를 출력으로 보냄
+            # ✅ 변환된 결과를 출력으로 보냄
             self.Outputs.transformed_data.send(transformed_data)
 
-            # 🛠 결과 출력 UI 업데이트
+            # ✅ 결과 출력 UI 업데이트
             self.result_text = "\n".join(results)  # 결과를 하나의 텍스트로 연결
             self.result_display.setPlainText(self.result_text)
 
         except Exception as e:
             self.result_text = f"❌ Error: {str(e)}"
-            self.Outputs.transformed_data.send(Orange.data.Table([]))  # 빈 테이블 전송
+            
+            # ✅ 빈 테이블을 전송 (빈 값도 문자열로 설정)
+            empty_data = Orange.data.Table(domain, np.array([[""]], dtype=object))
+            self.Outputs.transformed_data.send(empty_data)
             self.result_display.setPlainText(self.result_text)
