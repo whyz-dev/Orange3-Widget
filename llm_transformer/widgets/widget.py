@@ -2,7 +2,6 @@ from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
 import Orange.data
 from PyQt5.QtWidgets import QTextEdit  # QTextEdit 사용
-import numpy as np
 from .llm import LLM  # llm.py에서 LLM 클래스를 가져옴
 
 class LLMTransformerWidget(OWWidget):
@@ -43,20 +42,17 @@ class LLMTransformerWidget(OWWidget):
 
     @Inputs.text_data
     def set_data(self, data):
-        if data is None or len(data) == 0:
-            print("❌ `set_data()`가 빈 데이터([])를 받았습니다. 기본 테스트 데이터를 넣습니다.")
-        else:
-            if isinstance(data, Orange.data.Table):
-                # 모든 string-meta 변수를 찾음
-                string_meta_indices = [
-                    idx for idx, var in enumerate(data.domain.metas)
-                    if isinstance(var, Orange.data.StringVariable)
-                ]
-                # 모든 string-meta 변수를 모아서 하나의 문자열로 합침
-                data = [
-                    " ".join(str(row.metas[idx]) for idx in string_meta_indices)
-                    for row in data
-                ]
+        if isinstance(data, Orange.data.Table):
+            # 모든 string-meta 변수를 찾음
+            string_meta_indices = [
+                idx for idx, var in enumerate(data.domain.metas)
+                if isinstance(var, Orange.data.StringVariable)
+            ]
+            # 모든 string-meta 변수를 모아서 하나의 문자열로 합침
+            data = [
+                " ".join(str(row.metas[idx]) for idx in string_meta_indices)
+                for row in data
+            ]
 
         self.text_data = data
         self.transform_button.setDisabled(False)
@@ -73,28 +69,14 @@ class LLMTransformerWidget(OWWidget):
         # ✅ 문자열 데이터를 위한 메타 데이터 설정
         domain = Orange.data.Domain([], metas=[Orange.data.StringVariable("Transformed Text")])
 
-        try:
-            # ✅ GPT API 호출 (timeout 매개변수 제거)
-            llm = LLM()
-            results = llm.get_response(self.prompt, self.text_data)  # timeout 제거
-            print(self.prompt)
-            if not results:
-                raise ValueError("GPT API returned no results.")  # 결과가 없을 경우 오류 발생
+        # ✅ GPT API 호출 (timeout 매개변수 제거)
+        llm = LLM()
+        results = llm.get_response(self.prompt, self.text_data) 
+        transformed_data = Orange.data.Table(domain, [[str(result)] for result in results])
 
-            # ✅ 변환된 데이터 저장 (항상 문자열)
-            transformed_data = Orange.data.Table(domain, [[str(result)] for result in results])
+        # ✅ 변환된 결과를 출력으로 보냄
+        self.Outputs.transformed_data.send(transformed_data)
 
-            # ✅ 변환된 결과를 출력으로 보냄
-            self.Outputs.transformed_data.send(transformed_data)
-
-            # ✅ 결과 출력 UI 업데이트
-            self.result_text = "\n".join(results)  # 결과를 하나의 텍스트로 연결
-            self.result_display.setPlainText(self.result_text)
-
-        except Exception as e:
-            self.result_text = f"❌ Error: {str(e)}"
-            
-            # ✅ 빈 테이블을 전송 (빈 값도 문자열로 설정)
-            empty_data = Orange.data.Table(domain, np.array([[""]], dtype=object))
-            self.Outputs.transformed_data.send(empty_data)
-            self.result_display.setPlainText(self.result_text)
+        # ✅ 결과 출력 UI 업데이트
+        self.result_text = "\n".join(results)  # 결과를 하나의 텍스트로 연결
+        self.result_display.setPlainText(self.result_text)
