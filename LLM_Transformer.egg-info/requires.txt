@@ -1,4 +1,0 @@
-Orange3
-OpenAI
-PyQT5
-dotenv

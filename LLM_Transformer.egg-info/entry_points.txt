@@ -1,2 +1,0 @@
-[orange.widgets]
-LLM Widgets = llm_transformer.widgets
