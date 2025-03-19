@@ -61,22 +61,18 @@ class LLMTransformerWidget(OWWidget):
     def process(self):
         """변환 실행 버튼을 눌렀을 때만 GPT API 호출"""
         self.prompt = self.prompt_input.toPlainText()
-        if not self.text_data:
-            self.result_text = "❌ 입력 데이터가 없습니다."
-            self.result_display.setPlainText(self.result_text)
-            return
-
-        # ✅ 문자열 데이터를 위한 메타 데이터 설정
+        
+        # 문자열 데이터를 위한 메타 데이터 설정
         domain = Orange.data.Domain([], metas=[Orange.data.StringVariable("Transformed Text")])
 
-        # ✅ GPT API 호출 (timeout 매개변수 제거)
+        # GPT API 호출
         llm = LLM()
         results = llm.get_response(self.prompt, self.text_data) 
         transformed_data = Orange.data.Table(domain, [[str(result)] for result in results])
 
-        # ✅ 변환된 결과를 출력으로 보냄
+        # 변환된 결과를 출력으로 보냄
         self.Outputs.transformed_data.send(transformed_data)
 
-        # ✅ 결과 출력 UI 업데이트
+        # 결과 출력 UI 업데이트
         self.result_text = "\n".join(results)  # 결과를 하나의 텍스트로 연결
         self.result_display.setPlainText(self.result_text)
