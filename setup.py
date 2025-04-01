@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     # 애드온 이름
-    name="LLM Transformer",  
+    name="Orange Widget",  
     version="0.1",
     # 애드온 설명
     description="Orange3 LLM 기반 사용자 정의 위젯입니다.",
@@ -15,7 +15,7 @@ setup(
         # LLM Widgets라는 그룹에
         # llm_transformer.widgets 안에 있는 위젯이 자동으로 포함됩니다.
         "orange.widgets": [
-            "LLM Widgets = llm_transformer.widgets",
+            "Orange Widget = orangecontrib.widgets",
         ]
     },
 )

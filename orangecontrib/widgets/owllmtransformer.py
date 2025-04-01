@@ -2,9 +2,9 @@ from Orange.widgets.widget import OWWidget, Input, Output
 from Orange.widgets import gui
 import Orange.data
 from PyQt5.QtWidgets import QTextEdit  # QTextEdit 사용
-from .llm import LLM  # llm.py에서 LLM 클래스를 가져옴
+from ..utils.llm import LLM  # llm.py에서 LLM 클래스를 가져옴
 
-class LLMTransformerWidget(OWWidget):
+class OWLLMTransformer(OWWidget):
     name = "LLM Transformer"
     description = "GPT API를 통해 입력 데이터를 변환하는 Orange3 위젯"
     priority = 10
