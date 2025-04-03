@@ -34,13 +34,22 @@ def is_connected() -> bool:
     return _connection is not None and _connection.is_open
 
 
-def send_and_receive(message: str, wait_time: float = 1.0) -> str:
+def send_and_receive(message: str, wait_time: float = 2.0) -> str:
     """메시지 전송 후 응답 수신"""
     global _connection
     if not _connection or not _connection.is_open:
         raise RuntimeError("Microbit 연결이 되어 있지 않습니다. connect(port)를 먼저 호출하세요.")
 
+    _connection.reset_input_buffer()  # 🧹 이전 수신 버퍼 정리
     _connection.write((message + '\n').encode('utf-8'))
+
     time.sleep(wait_time)
-    response = _connection.readline().decode('utf-8').strip()
-    return response
+
+    if _connection.in_waiting > 0:
+        try:
+            response = _connection.readline().decode('utf-8', errors='ignore').strip()
+            return response if response else "[응답 없음]"
+        except Exception as e:
+            return f"[디코딩 오류: {str(e)}]"
+    else:
+        return "[타임아웃: 응답 없음]"
