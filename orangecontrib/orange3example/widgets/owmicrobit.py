@@ -3,13 +3,13 @@ from Orange.widgets import gui
 from PyQt5.QtWidgets import QTextEdit, QPushButton, QComboBox, QLabel, QHBoxLayout, QWidget
 import Orange.data
 
-from orangecontrib.utils import microbit
+from orangecontrib.orange3example.utils import microbit
 
 
 class OWMicrobit(OWWidget):
     name = "Microbit Communicator"
     description = "통신 포트를 통해 마이크로비트와 데이터를 주고받는 위젯"
-    icon = "icons/category.svg"
+    icon = "../icons/machine-learning-03-svgrepo-com.svg"
     priority = 20
 
     class Inputs:

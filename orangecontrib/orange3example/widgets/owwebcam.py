@@ -6,14 +6,14 @@ from PyQt5.QtCore import QTimer
 import numpy as np
 
 try:
-    from orangecontrib.utils import webcam
+    from orangecontrib.orange3example.utils import webcam
 except ImportError:
     webcam = None
 
 class OWWebcam(OWWidget):
     name = "Webcam Viewer"
     description = "웹캠을 실시간으로 표시하는 위젯"
-    icon = "icons/category.svg"
+    icon = "../icons/machine-learning-03-svgrepo-com.svg"
     priority = 30
 
     def __init__(self):

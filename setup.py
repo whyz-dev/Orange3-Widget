@@ -1,21 +1,34 @@
 from setuptools import setup, find_packages
 
 setup(
-    # 애드온 이름
-    name="Orange Widget",  
-    version="0.1",
-    # 애드온 설명
-    description="Orange3 LLM 기반 사용자 정의 위젯입니다.",
+    name="Orange3-Example",  # PyPI 등록 이름
+    version="0.1.0",
+    description="Orange3 LLM 기반 사용자 정의 예제 위젯입니다.",
+    author="Gangjun Jo",
+    author_email="your.email@example.com",
+    url="https://github.com/whyz-dev/Orange3-Widget",
+    license="MIT",
     packages=find_packages(),
     include_package_data=True,
-    # 위젯을 사용하기 위해 필요한 종속성 확인
-    install_requires=["Orange3", "OpenAI", "PyQT5", "dotenv"],
+    install_requires=[
+        "Orange3>=3.32.0",
+        "openai",
+        "PyQt5",
+        "python-dotenv",
+        "opencv-python",
+        "pyserial"
+    ],
     entry_points={
-        # 위젯 그룹 등록
-        # LLM Widgets라는 그룹에
-        # llm_transformer.widgets 안에 있는 위젯이 자동으로 포함됩니다.
-        "orange.widgets": [
-            "Orange Widget = orangecontrib.widgets",
-        ]
+        "orange3.addon": (
+            "orange3example = orangecontrib.orange3example",
+        ),
+        "orange.widgets": (
+            "Example Widgets = orangecontrib.orange3example.widgets",
+        ),
     },
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+    ],
+    zip_safe=False,
 )
