@@ -5,7 +5,6 @@ setup(
     version="0.1.0",
     description="Orange3 LLM 기반 사용자 정의 예제 위젯입니다.",
     author="Gangjun Jo",
-    author_email="your.email@example.com",
     url="https://github.com/whyz-dev/Orange3-Widget",
     license="MIT",
     packages=find_packages(),
