@@ -106,31 +106,43 @@ class OWMicrobit(OWWidget):
     def set_text_data(self, data):
         if isinstance(data, Orange.data.Table):
             self.text_data = data
+            try:
+                text = str(data[0][0])
+                self.log(f"입력 데이터를 수신했습니다: {text}")
+                self.send_text_to_microbit(text)  # 자동 전송
+            except Exception as e:
+                self.log(f"입력 텍스트 추출 실패: {e}")
+
+    def send_text_to_microbit(self, text: str):
+        if not text:
+            self.receive_box.setPlainText("전송할 텍스트가 없습니다.")
+            self.log("전송할 텍스트가 없습니다.")
+            return
+
+        if not microbit:
+            self.receive_box.setPlainText("[Error] microbit 모듈이 없습니다.")
+            self.log("microbit 모듈이 없습니다.")
+            return
+
+        if not microbit.is_connected():
+            self.receive_box.setPlainText("먼저 포트를 연결하세요.")
+            self.log("포트가 연결되지 않았습니다.")
+            return
+
+        try:
+            response = microbit.send_and_receive(text)
+            self.receive_box.setPlainText(response)
+
+            domain = Orange.data.Domain([], metas=[Orange.data.StringVariable("Received")])
+            out_table = Orange.data.Table(domain, [[response]])
+            self.Outputs.received_data.send(out_table)
+
+            self.log(f"보냄: {text}")
+            self.log(f"수신: {response}")
+        except Exception as e:
+            self.receive_box.setPlainText(f"[Error] {str(e)}")
+            self.log(f"전송 중 오류 발생: {str(e)}")
 
     def send_to_microbit(self):
         text = self.send_box.toPlainText().strip()
-        if not text:
-            self.receive_box.setPlainText("전송할 텍스트가 없습니다.")
-            self.log("⚠️ 전송할 텍스트가 없습니다.")
-            return
-
-        if microbit:
-            try:
-                if not microbit.is_connected():
-                    self.receive_box.setPlainText("먼저 포트를 연결하세요.")
-                    self.log("포트가 연결되지 않았습니다.")
-                    return
-                response = microbit.send_and_receive(text)
-                self.receive_box.setPlainText(response)
-
-                domain = Orange.data.Domain([], metas=[Orange.data.StringVariable("Received")])
-                out_table = Orange.data.Table(domain, [[response]])
-                self.Outputs.received_data.send(out_table)
-                self.log(f"보냄: {text}")
-                self.log(f"수신: {response}")
-            except Exception as e:
-                self.receive_box.setPlainText(f"[Error] {str(e)}")
-                self.log(f"전송 중 오류 발생: {str(e)}")
-        else:
-            self.receive_box.setPlainText("[Error] microbit 모듈이 없습니다.")
-            self.log("microbit 모듈이 없습니다.")
+        self.send_text_to_microbit(text)
